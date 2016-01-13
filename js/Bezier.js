@@ -75,15 +75,15 @@ function Bezier() {
 	function getTangModel(t_) {
 		var tangPto = getTang(t_);
 
-		tangPto[0] = new Point(tangPto[0].x, tangPto[0].y, tangPto[0].z);
-		tangPto[1] = new Point(tangPto[1].x, tangPto[1].y, tangPto[1].z);
-		//tangPto = new Point(tangPto.x, tangPto.y, tangPto.z);
+		tangPto[0] = vec3.fromValues(tangPto[0].x, tangPto[0].y, tangPto[0].z);
+		tangPto[1] = vec3.fromValues(tangPto[1].x, tangPto[1].y, tangPto[1].z);
+		//tangPto = vec3.fromValues(tangPto.x, tangPto.y, tangPto.z);
 //    tangPto = tangPto.removeAxis();
 
 		var bezierPto = getBezier(t_);
-		bezierPto = new Point(bezierPto.x, bezierPto.y, bezierPto.z);
+		bezierPto = vec3.fromValues(bezierPto.x, bezierPto.y, bezierPto.z);
 
-		//var tangPtoUni = new Point(tangPto.x, tangPto.y, tangPto.z);
+		//var tangPtoUni = vec3.fromValues(tangPto.x, tangPto.y, tangPto.z);
 		//tangPtoUni  = tangPtoUni.scale(1/tangPtoUni.len());
 
 		//console.log(tangPtoUni);
@@ -176,7 +176,7 @@ function Bezier() {
 			var derWeightX = controlP[i + 1].x - controlP[i].x;
 			var derWeightY = controlP[i + 1].y - controlP[i].y;
 			var derWeightZ = controlP[i + 1].z - controlP[i].z;
-			var point = new Point(derWeightX, derWeightY, derWeightZ);
+			var point = vec3.fromValues(derWeightX, derWeightY, derWeightZ);
 
 			bernSum[i] = point.scale(binTerm * polTerm * n);
 			//{
