@@ -2,10 +2,10 @@
  * Triangle
  */
 
-function Triangle(vertices, camera) {
-	var vertices = new Array();
-	var camera = new Array();
-	var normal = vec3.create();
+function Triangle(vertices) {
+	var vertices = vec3.create();
+	var normals = vec3.create();
+	var views = vec3.create();
 	var facing = true;
 	var bounds = new Bounds();
 	var reflectivity = new Color();
@@ -29,10 +29,10 @@ Triangle.prototype.getMinY = function(){
  * Calculates the bounds of the polygon
  */
 Triangle.prototype.bounds = function() {
-	var minX = Math.min(Math.min(vertices[0].x, vertices[1].x),vertices[2].x);
-	var minY = Math.min(Math.min(vertices[0].y, vertices[1].y),vertices[2].y);
-	var maxX = Math.max(Math.max(vertices[0].x, vertices[1].x),vertices[2].x);
-	var maxY = Math.max(Math.max(vertices[0].y, vertices[1].y),vertices[2].y);
+	var minX = Math.min(Math.min(vertices[0][0], vertices[1][0]),vertices[2][0]);
+	var minY = Math.min(Math.min(vertices[0][1], vertices[1][1]),vertices[2][1]);
+	var maxX = Math.max(Math.max(vertices[0][0], vertices[1][0]),vertices[2][0]);
+	var maxY = Math.max(Math.max(vertices[0][1], vertices[1][1]),vertices[2][1]);
 	bounds = new Bounds(minX, minY, (maxX - minX), (maxY - minY));
 	return bounds;
 };
@@ -51,14 +51,83 @@ Triangle.prototype.calculateNormal = function() {
 	/* normalizacao de n */
 	/* Calculo do produto vetorial de v1 e v2 */
 	normal = (v1.crossProduct(v2)).norm();
+	vec3.cross(normal, v1, v2);
+	normal = vec3.norm(normal);
 
 	// update facing boolean
-	if (normal.z > 0)
+	if (normal[2] > 0)
 		facing = false;
 	else
 		facing = true;
-}
+};
 
+Triangle.prototype.calculateArea = function() {
+	var A = vertices[0];
+	var B = vertices[1];
+	var C = vertices[2];
+
+	return Math.abs(A[0]*C[1] - A[1]*C[0] + A[1]*B[0] - A[0]*B[1] +
+	C[0]*B[1] - C[1]*B[0] / 2);
+};
+
+/*
+ * Encontrar coordenadas baricentricas
+ */
+
+
+Triangle.prototype.barycentricCoordinates = function(P) {
+	var A = vertices[0];
+	var B = vertices[1];
+	var C = vertices[2];
+
+//
+//double[] PP1 = Algeb.sub(P, P1);
+//double[] P2P1 = Algeb.sub(P2, P1);
+//double[] P2P3 = Algeb.sub(P2, P3);
+//double[] PP3 = Algeb.sub(P, P3);
+//double[] P3P1 = Algeb.sub(P3, P1);
+//double[] vPP1 = new double[] { PP1[0], PP1[1], 0 };
+//double[] vP2P1 = new double[] { P2P1[0], P2P1[1], 0 };
+//double[] vP2P3 = new double[] { P2P3[0], P2P3[1], 0 };
+//double[] vPP3 = new double[] { PP3[0], PP3[1], 0 };
+//double[] vP3P1 = new double[] { P3P1[0], P3P1[1], 0 };
+//
+//double A1 = Algeb.getNorma(Algeb.prodVetorial(vPP1, vP2P1));
+//double A2 = Algeb.getNorma(Algeb.prodVetorial(vPP3, vP2P3));
+//double A3 = Algeb.getNorma(Algeb.prodVetorial(vPP1, vP3P1));
+//double total = A1 + A2 + A3;
+//return new double[] { (A2 / total), (A3 / total), (A1 / total) };
+
+	/* Using triangle area*/
+//função pontoEmTriângulo(Ponto P,
+//Ponto P1, Ponto P2, Ponto P3): booleano
+//início
+//real lambda1, lambda2, lambda3, S;
+//S = áreaOrientadaTriângulo(P1, P2, P3);
+//lambda1 = áreaOrientadaTriângulo(P, P2, P3) / S;
+//lambda2 = áreaOrientadaTriângulo(P1, P, P3) / S;
+//lambda3 = áreaOrientadaTriângulo(P1, P2, P) / S;
+//retorne ((lambda1 > 0) e (lambda2 > 0) e (lambda3 > 0))
+//fim.
+};
+
+
+Triangle.prototype.getViewPointInside = function(point){
+
+	/* Calcula o pixel em coordenadas de visão */
+	var coords = this.barycentricCoordinates(point);
+
+	var P1 = views[0];
+	var P2 = views[1];
+	var P3 = views[1];
+
+	var x = coords[0]*P1[0] + coords[1]*P2[0] + coords[2]*P3[0];
+	var y = coords[0]*P1[1] + coords[1]*P2[1] + coords[2]*P3[1];
+	var z = coords[0]*P1[2] + coords[1]*P2[2] + coords[2]*P3[2];
+
+	var P = vec3.fromValues(x, y, z);
+	return P;
+};
 
 /*
  * Calculates the shading of the polygon
@@ -129,23 +198,23 @@ Triangle.prototype.edgeList = function() {
 		var va = vertices[i];
 		var vb = vertices[(i+1)%3];
 
-		//console.log("va.y " + va.y + " vb.y " + vb.y);
+		//console.log("va[1] " + va[1] + " vb[1] " + vb[1]);
 
-		if(va.y > vb.y){
+		if(va[1] > vb[1]){
 			vb = va;
 			va = vertices[(i+1)%3];
 		}
 
 
-		//console.log("va.y " + va.y + " vb.y " + vb.y);
+		//console.log("va[1] " + va[1] + " vb[1] " + vb[1]);
 
-		var mx = (vb.x - va.x)/(vb.y - va.y);
-		var mz = (vb.z - va.z)/(vb.z - va.z);
-		var x = va.x;
-		var z = va.z;
+		var mx = (vb[0] - va[0])/(vb[1] - va[1]);
+		var mz = (vb[2] - va[2])/(vb[2] - va[2]);
+		var x = va[0];
+		var z = va[2];
 
-		var j = Math.round(va.y)- Math.round(bounds.getY());
-		var maxj = Math.round(vb.y) - Math.round(bounds.getY());
+		var j = Math.round(va[1])- Math.round(bounds.getY());
+		var maxj = Math.round(vb[1]) - Math.round(bounds.getY());
 
 		while(j < maxj){
 			if(e[j] == null){

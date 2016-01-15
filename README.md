@@ -26,7 +26,7 @@ de iluminação de Phong por triângulo (Flat Shading).
 
 3 - Fazer a mudança de coordenadas para o sistema de vista de todos os vértices dos objetos e da posição da fonte de luz PL, 
 
-4- Gerar as normais dos triângulos, gerar as normais dos vértices.
+4 - Gerar as normais dos triângulos, gerar as normais dos vértices.
 
 5 - Ordenam-se os triângulos do objeto segundo a distância dos seus baricentros para a origem, do mais distante para o mais próximo
 Para que se faça a conversão do mais distante primeiro (Zbuffer) 
@@ -37,19 +37,22 @@ Para que se faça a conversão do mais distante primeiro (Zbuffer)
     2 - Calculam-se as projeções dos seus vértices e inicia-se a sua conversão por varredura com coerência geométrica (scanline) 
     pintando todos os pixels do triângulo com a cor calculada.
 
-7 - Para executar a conversão de um dado triângulo, antes de qualquer coisa, seus vértices são projetados em perspectiva sobre o plano de vista 
-(mas guardam-se também seus vértices não projetados).Para cada pixel de coordenadas (x, yscan) do interior do triângulo projetado, encontram-se suas 
-coordenadas baricêntricas com relação aos vértices deste triângulo projetado. Estas coordenadas baricêntricas são multiplicadas pelos respectivos 
-vértices não projetados originais, obtendo-se assim uma aproximação para o ponto P do espaço 3D cuja projeção é (x, yscan). Com a coordenada z desta 
-aproximação de P, faz-se uma consulta ao z-buffer para se saber se é necessário se fazer o cálculo da iluminação, ou seja, se a aproximação calculada 
-está mais próxima que a aproximação feita anteriormente para outro ponto cuja projeção é (x, yscan).   
-Se for o caso, as mesmas coordenadas baricêntricas são multiplicadas pelas respectivas normais para se obter uma aproximação para a normal no ponto P.
+# Notas:
 
-8 - Também utilizando a aproximação de P, calcula-se V e L; com L e N (normal) calcula-se R e substituem-se estes vetores na equação do modelo de iluminação 
-de Phong, juntamente com os parâmetros fornecidos pelo usuário, calcula-se a cor do pixel (x, yscan). 
+1 - Para executar a conversão de um dado triângulo, antes de qualquer coisa, seus vértices são projetados em perspectiva sobre o plano de vista 
+(mas guardam-se também seus vértices não projetados).
+	- Para cada pixel de coordenadas (x, yscan) do interior do triângulo projetado, encontram-se suas 
+coordenadas baricêntricas com relação aos vértices deste triângulo projetado. 
+    - Estas coordenadas baricêntricas são multiplicadas pelos respectivos vértices não projetados originais, obtendo-se assim uma aproximação 
+    para o ponto P do espaço 3D cuja projeção é (x, yscan). Com a coordenada z desta aproximação de P, faz-se uma consulta ao z-buffer para se 
+    saber se é necessário se fazer o cálculo da iluminação, ou seja, se a aproximação calculada está mais próxima que a aproximação feita 
+    anteriormente para outro ponto cuja projeção é (x, yscan).   
+	- Se for o caso, as mesmas coordenadas baricêntricas são multiplicadas pelas respectivas normais para se obter uma aproximação para a normal no ponto P.
+    - Também utilizando a aproximação de P, calcula-se V e L; com L e N (normal) calcula-se R e substituem-se estes vetores na equação do modelo de iluminação 
+	de Phong, juntamente com os parâmetros fornecidos pelo usuário, calcula-se a cor do pixel (x, yscan). 
 
-Nota:
-Antes de executar a conversão de um dado triângulo, para cada baricentro são computados os vetores de iluminação (V, L, e R),
+
+3 - Antes de executar a conversão de um dado triângulo, para cada baricentro são computados os vetores de iluminação (V, L, e R),
 e substituídos na equação do modelo de iluminação de Phong, gerando a cor do triângulo.
 Em seguida, os vértices são projetados e uma rotina de preenchimento de triângulos da biblioteca gráfica é utilizada.
 

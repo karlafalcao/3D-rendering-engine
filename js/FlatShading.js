@@ -2,30 +2,33 @@
 /*
  * Flat Shading
  */
-//TODO Get the list of points
-//TODO Get the list of triangles
-//TODO Calibrate the camera (U(LEFT) = NxV)
+// Get the list of points
+// Get the list of triangles
+// TODO Calibrate the camera (U(RIGHT) = NxV)
 // O seu sistema começa preparando a câmera, ortogonalizando V e gerando U, e depois os normalizando
-//TODO Converter todas as coordenadas para vista (projecao)
+//TODO Converter todas as coordenadas para vista
 // Fazer a mudança de coordenadas para o sistema de vista de todos os vértices dos objetos e da
-// posição da fonte de luz PL, gerar as normais dos triângulos.
+// posição da fonte de luz PL,
 //TODO Calcula normais dos triangulos (call triangleNormalVector)
-//	Ordenam-se os triângulos do objeto segundo a distância dos seus baricentros para a origem, do mais distante para o mais próximo.
+//TODO Ordenam-se os triângulos do objeto segundo a distância dos seus baricentros para a origem, do mais distante para o mais próximo.
 //  Para que se faça a conversão do mais distante primeiro (Zbuffer)
 //TODO Calcula normais nos vertices
 //TODO Inicialização z-buffer
 //TODO - Para cada triangulo
 //TODO - Projeta seus vertices (P1', P2', P3')
-//TODO - Algoritmo  de pintura(Algoritmo Scan conversion)
-//TODO --- Para cada pixel -> encontre suas coordenadas baricentricas P' = alfa*P1'+beta*P2'+gama*P3'
-//TODO --- Para cada pixel -> encontre ponto no mundo 3d : P = alfa*P1+beta*P2+gama*P3
-//TODO --- Para cada pixel -> Consulte z-buffer, se Pxz < zbuffer[Px, Py];
-//TODO --- Para cada pixel -> Equacao de iluminacao N = alfa*N1+beta*N2+gama*N3 -> Encontre R e V e normalize
-//TODO --- Para cada pixel -> Jogar na equacao de iluminacao
-//TODO --- Para cada pixel -> Checar se N está no mesmo sentido de V (norma do triangulo)
-//TODO --- Para cada pixel -> Se N.V < 0 entao muda o sinal de V (N=-N);
-//TODO --- Para cada pixel -> Se N.L < 0 entao so componente ambiental;
-//TODO --- Para cada pixel -> Se V.R < 0 entao tem especular;
+//TODO - Algoritmo de pintura(Algoritmo Scan conversion)
+//TODO --- Para cada pixel/ponto P'-> encontre suas coordenadas baricentricas P' = alfa*P1'+beta*P2'+gama*P3'
+//TODO --- Para cada pixel/ponto P'-> encontre ponto no mundo 3d : P = alfa*P1+beta*P2+gama*P3
+//TODO --- Para cada pixel/ponto P'-> Consulte z-buffer, se Pz < zbuffer[Px, Py];
+//TODO --- Para cada pixel/ponto P'-> Equacao de iluminacao
+//TODO --- Para cada pixel/ponto P'-> Encontre N = alfa*N1+beta*N2+gama*N3 -> Encontre R e V() e normalize
+//TODO --- Para cada pixel/ponto P'-> Encontre R e V(norm(C-P)) e normalize
+//TODO --- Para cada pixel/ponto P'-> Jogar na equacao de iluminacao
+//TODO --- Para cada pixel/ponto P'-> Checar se N está no mesmo sentido de V (norma do triangulo)
+//TODO --- Para cada pixel/ponto P'-> Se N.V < 0 entao muda o sinal de V (N=-N);
+//TODO --- Para cada pixel/ponto P'-> Se N.L > 0 entao adicionar componente difusa;
+//TODO --- Para cada pixel/ponto P'-> Se V.R > 0 entao adicionar componente especular;
+
 function FlatShading() {
 
 	this.object;
@@ -166,6 +169,7 @@ function FlatShading() {
 			'diffuseVector',
 			'specular',
 			'lightColor',
+			'n',
 		];
 
 		for (var i=0; i < lightFileLines.length; i++) {
@@ -207,12 +211,15 @@ function FlatShading() {
 		var line = objectFileLines[i];
 		var lineValues = line.split(' ');
 		if(lineAttr[i] == 'qty' && lineValues.length === 2) {
+			/*
+			Reading: Qty of vertices and qty of triangles*/
 			var verticesQty = parseInt(lineValues[0]);
 			var trianglesQty = parseInt(lineValues[1]);
 			object[lineAttr[i]] = [];
 			object[lineAttr[i]].push(verticesQty);
 			object[lineAttr[i]].push(trianglesQty);
 
+			/*Reading: Vertices*/
 			var vS = i+1;
 			var vF = i+verticesQty;
 
@@ -238,7 +245,9 @@ function FlatShading() {
 			if (object.vertices.length !== 3*verticesQty) {
 				return;
 			}
-			//Keeping reading
+
+			/*Keeping reading*/
+			/*Reading: Triangles*/
 			var tS = vS;
 			var tF = vS+trianglesQty-1;
 

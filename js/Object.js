@@ -28,10 +28,10 @@ function Object(attrs) {
 	var h = 0;
 }
 
-this.getTriangleVertices = function(index) {
-	if (index < 0 || index >= this.verticesQty) {
-
-	}	return [];
+Object.prototype.getTriangleVertices = function(index) {
+	if (index < 0 || index >= this.trianglesQty) {
+		return;
+	}
 
 	var triangleIndexes = this.triangles.slice(index*3, (index*3)+2);
 	var triangleVertices = [];
