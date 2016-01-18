@@ -15,10 +15,10 @@
 //TODO Calcula normais nos vertices
 //TODO Inicialização z-buffer
 //TODO - Para cada triangulo
-//TODO - Projeta seus vertices (P1', P2', P3')
+//TODO - Projeta seus vertices (P1', P2', P3')vertices
 //TODO - Algoritmo de pintura(Algoritmo Scan conversion)
 //TODO --- Para cada pixel/ponto P'-> encontre suas coordenadas baricentricas P' = alfa*P1'+beta*P2'+gama*P3'
-//TODO --- Para cada pixel/ponto P'-> encontre ponto no mundo 3d : P = alfa*P1+beta*P2+gama*P3
+//TODO --- Para cada pixel/ponto P'-> encontre ponto no mundo 3d : P(views) = alfa*P1+beta*P2+gama*P3
 //TODO --- Para cada pixel/ponto P'-> Consulte z-buffer, se Pz < zbuffer[Px, Py];
 //TODO --- Para cada pixel/ponto P'-> Equacao de iluminacao
 //TODO --- Para cada pixel/ponto P'-> Encontre N = alfa*N1+beta*N2+gama*N3 -> Encontre R e V() e normalize
@@ -36,7 +36,7 @@ function FlatShading() {
 	this.camera;
 	var fs = this;
 
-	var init = function() {
+	this.init = function() {
 
 		loadFiles()
 			.then(function(data){
@@ -47,23 +47,44 @@ function FlatShading() {
 				var cameraAttr = loadCamera(cameraFileContent);
 				var lightAttr = loadLight(lightFileContent);
 				var objectAttr = loadObject(objectFileContent);
-
+				if (!cameraAttr || !lightAttr || !objectAttr) {
+					alert('Erro de leitura;');
+					return;
+				}
+				/*Camera setup*/
 				fs.camera = new Camera(cameraAttr);
+
+				fs.camera.calculateFrontVector();
+				fs.camera.calculateUpVector();
+				fs.camera.calculateRightVector();
+
+				console.log(fs.camera);
+
+				/*Light setup*/
 				fs.light = new Light(lightAttr);
+
+				fs.light.calculateLightSource(fs.camera);
+
+				console.log(fs.light);
+
+				/*Object setup*/
 				fs.object = new Object(objectAttr);
 
-				//var rp = new RenderPipeline(object.triangles);
-				////rp.printPolys();
-				//console.log(fileName);
-				//
-				//rp.initialisezBuffer();
-				//rp.render();
-				//
-				//console.log(screen);
+				fs.object.calculateVertices(fs.camera);
+				fs.object.calculateNormals(fs.camera);
+
+				console.log(fs.object);
+
+				var rp = new RenderPipeline(fs.object, fs.light, fs.camera);
+
+				rp.render();
+
+				console.log(rp.screen);
 			});
 	};
 
 	var loadFiles = function() {
+		/*Request files*/
 		return fromServerRequest();
 		//return fromFileChooser();
 	};
@@ -125,6 +146,7 @@ function FlatShading() {
 	};
 
 	var loadCamera = function(fileContent) {
+		/*Load Camera attributtes*/
 		var cameraFileLines = fileContent.split('\n').slice(0,-1);
 		var camera = {};
 		var lineAttr = [
@@ -159,6 +181,7 @@ function FlatShading() {
 	};
 
 	var loadLight = function(fileContent) {
+		/*Load Light attributtes*/
 		var lightFileLines = fileContent.split('\n').slice(0,-1);
 		var light = {};
 		var lineAttr = [
@@ -230,9 +253,10 @@ function FlatShading() {
 				var vertice = verticeLine.split(' ');
 
 				if(vertice.length === 3) {
-					object.vertices.push(parseFloat(vertice[0]));
-					object.vertices.push(parseFloat(vertice[1]));
-					object.vertices.push(parseFloat(vertice[2]));
+					object.vertices.push(vec3.fromValues(
+					parseFloat(vertice[0]),
+					parseFloat(vertice[1]),
+					parseFloat(vertice[2])));
 					vS++;
 				} else {
 					vS++;
@@ -240,9 +264,7 @@ function FlatShading() {
 				}
 			}
 
-			object.vertices = new Float32Array(object.vertices);
-
-			if (object.vertices.length !== 3*verticesQty) {
+			if (object.vertices.length !== verticesQty) {
 				return;
 			}
 
@@ -258,9 +280,10 @@ function FlatShading() {
 				var triangle = triangleLine.split(' ');
 
 				if(triangle.length === 3) {
-					object.triangles.push(parseInt(triangle[0]));
-					object.triangles.push(parseInt(triangle[1]));
-					object.triangles.push(parseInt(triangle[2]));
+					object.triangles.push(vec3.fromValues(
+						parseFloat(triangle[0]),
+						parseFloat(triangle[1]),
+						parseFloat(triangle[2])));
 					tS++;
 				} else {
 					tS++;
@@ -268,9 +291,7 @@ function FlatShading() {
 				}
 			}
 
-			object.triangles = new Float32Array(object.triangles);
-
-			if (object.triangles.length !== 3*trianglesQty) {
+			if (object.triangles.length !== trianglesQty) {
 				return;
 			}
 		}
@@ -336,5 +357,4 @@ function FlatShading() {
 	//	}
 	//}
 
-	init();
 }

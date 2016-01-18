@@ -3,26 +3,15 @@
  */
 
 function Triangle(vertices) {
-	var vertices = vec3.create();
-	var normals = vec3.create();
-	var views = vec3.create();
-	var facing = true;
-	var bounds = new Bounds();
-	var reflectivity = new Color();
-	var colour = new Color();
-	var P = vec3.create();
-	var V = vec3.create(); //norm(C-P)
-	var L = vec3.create(); //norm(lightSource-P)
-
-	this.calculateNormal();
+	this.vertices = new Array();
+	this.facing = true;
+	this.bounds;
+	this.index;
 }
 
-Triangle.prototype.calculateV = function() {
-	vec3.sub(V, camera);
-};
 
 Triangle.prototype.getMinY = function(){
-	return Math.round(bounds.getY());
+	return Math.round(this.bounds.getY());
 };
 
 /*
@@ -33,101 +22,11 @@ Triangle.prototype.bounds = function() {
 	var minY = Math.min(Math.min(vertices[0][1], vertices[1][1]),vertices[2][1]);
 	var maxX = Math.max(Math.max(vertices[0][0], vertices[1][0]),vertices[2][0]);
 	var maxY = Math.max(Math.max(vertices[0][1], vertices[1][1]),vertices[2][1]);
-	bounds = new Bounds(minX, minY, (maxX - minX), (maxY - minY));
+
+	this.bounds = new Bounds(minX, minY, (maxX - minX), (maxY - minY));
 	return bounds;
 };
 
-
-/*
- * Updates/calculates the normal
- */
-Triangle.prototype.calculateNormal = function() {
-
-	/* Encontra vetor v1 */
-	var v1 = vertices[1].minus(vertices[0]);
-	/* Encontra vetor v2 */
-	var v2 = vertices[2].minus(vertices[1]);
-
-	/* normalizacao de n */
-	/* Calculo do produto vetorial de v1 e v2 */
-	normal = (v1.crossProduct(v2)).norm();
-	vec3.cross(normal, v1, v2);
-	normal = vec3.norm(normal);
-
-	// update facing boolean
-	if (normal[2] > 0)
-		facing = false;
-	else
-		facing = true;
-};
-
-Triangle.prototype.calculateArea = function() {
-	var A = vertices[0];
-	var B = vertices[1];
-	var C = vertices[2];
-
-	return Math.abs(A[0]*C[1] - A[1]*C[0] + A[1]*B[0] - A[0]*B[1] +
-	C[0]*B[1] - C[1]*B[0] / 2);
-};
-
-/*
- * Encontrar coordenadas baricentricas
- */
-
-
-Triangle.prototype.barycentricCoordinates = function(P) {
-	var A = vertices[0];
-	var B = vertices[1];
-	var C = vertices[2];
-
-//
-//double[] PP1 = Algeb.sub(P, P1);
-//double[] P2P1 = Algeb.sub(P2, P1);
-//double[] P2P3 = Algeb.sub(P2, P3);
-//double[] PP3 = Algeb.sub(P, P3);
-//double[] P3P1 = Algeb.sub(P3, P1);
-//double[] vPP1 = new double[] { PP1[0], PP1[1], 0 };
-//double[] vP2P1 = new double[] { P2P1[0], P2P1[1], 0 };
-//double[] vP2P3 = new double[] { P2P3[0], P2P3[1], 0 };
-//double[] vPP3 = new double[] { PP3[0], PP3[1], 0 };
-//double[] vP3P1 = new double[] { P3P1[0], P3P1[1], 0 };
-//
-//double A1 = Algeb.getNorma(Algeb.prodVetorial(vPP1, vP2P1));
-//double A2 = Algeb.getNorma(Algeb.prodVetorial(vPP3, vP2P3));
-//double A3 = Algeb.getNorma(Algeb.prodVetorial(vPP1, vP3P1));
-//double total = A1 + A2 + A3;
-//return new double[] { (A2 / total), (A3 / total), (A1 / total) };
-
-	/* Using triangle area*/
-//função pontoEmTriângulo(Ponto P,
-//Ponto P1, Ponto P2, Ponto P3): booleano
-//início
-//real lambda1, lambda2, lambda3, S;
-//S = áreaOrientadaTriângulo(P1, P2, P3);
-//lambda1 = áreaOrientadaTriângulo(P, P2, P3) / S;
-//lambda2 = áreaOrientadaTriângulo(P1, P, P3) / S;
-//lambda3 = áreaOrientadaTriângulo(P1, P2, P) / S;
-//retorne ((lambda1 > 0) e (lambda2 > 0) e (lambda3 > 0))
-//fim.
-};
-
-
-Triangle.prototype.getViewPointInside = function(point){
-
-	/* Calcula o pixel em coordenadas de visão */
-	var coords = this.barycentricCoordinates(point);
-
-	var P1 = views[0];
-	var P2 = views[1];
-	var P3 = views[1];
-
-	var x = coords[0]*P1[0] + coords[1]*P2[0] + coords[2]*P3[0];
-	var y = coords[0]*P1[1] + coords[1]*P2[1] + coords[2]*P3[1];
-	var z = coords[0]*P1[2] + coords[1]*P2[2] + coords[2]*P3[2];
-
-	var P = vec3.fromValues(x, y, z);
-	return P;
-};
 
 /*
  * Calculates the shading of the polygon
@@ -136,7 +35,7 @@ Triangle.prototype.getViewPointInside = function(point){
  * ￼I = Is*Ks(R.V)^h
  *  R = 2N (N.L) - L
  */
-Triangle.prototype.shading = function(lightSource, ambientLight) {
+Triangle.prototype.shading = function(normal, lightSource, ambientLight) {
 	var reflect = ambientLight;
 	if (normal.cosTheta(lightSource) > 0)
 		reflect = ambientLight + normal.cosTheta(lightSource);
@@ -188,9 +87,10 @@ Triangle.prototype.toString = function() {
 };
 
 
-Triangle.prototype.edgeList = function() {
-	bounds();
+Triangle.prototype.getEdgeList = function(v1, v2, v3) {
+	var bounds = this.getBounds();
 	var e = [];
+	var vertices = new Array(v1, v1, v3);
 	//EdgeList[] e = new EdgeList[Number(bounds.getHeight() + 1)];
 
 	for(var i = 0; i<3; i++){

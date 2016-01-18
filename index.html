@@ -42,11 +42,14 @@
 		</canvas>
 
 		<script src="js/lib/gl-matrix.js"></script>
-		<!--<script src="js/Vector.js"></script>-->
+
 		<script src="js/Camera.js"></script>
 		<script src="js/Light.js"></script>
-		<script src="js/Object.js"></script>
+		<script src="js/EdgeList.js"></script>
+		<script src="js/Bounds.js"></script>
 		<script src="js/Triangle.js"></script>
+		<script src="js/Object.js"></script>
+		<script src="js/RenderPipeline.js"></script>
 		<script src="js/FlatShading.js"></script>
 		<script>
 			var fs;
@@ -55,6 +58,7 @@
 
 					if (evt.target.tagName.toLowerCase() == 'button') {
 						fs = new FlatShading();
+						fs.init();
 					}
 				}, false);
 			}()

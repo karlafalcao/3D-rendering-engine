@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  * Light class
  *
@@ -15,7 +17,6 @@
  */
 
 function Light(attrs){
-	"use strict";
 
 	this.lightSource = attrs.lightSource || vec3.create();
 	this.ambient = attrs.ambient || 0.1;//Float
@@ -24,4 +25,18 @@ function Light(attrs){
 	this.diffuseVector = attrs.diffuseVector || vec3.fromValues(1,1,1);
 	this.specular = attrs.specular || 0;
 	this.lightColor = attrs.lightColor || vec3.create();
+	this.n = attrs.n || vec3.create();
 }
+
+Light.prototype.calculateLightSource = function (camera) {
+	vec3.sub(this.lightSource, this.lightSource, camera.position);
+
+	var x_visao = vec3.dot(this.lightSource, camera.rightVector);
+	var y_visao = vec3.dot(this.lightSource, camera.frontVector);
+	var z_visao = vec3.dot(this.lightSource, camera.upVector);
+
+	this.lightSource[0] = x_visao;
+	this.lightSource[1] = y_visao;
+	this.lightSource[2] = z_visao;
+
+};
