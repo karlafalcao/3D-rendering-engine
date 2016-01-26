@@ -8,136 +8,174 @@ function RenderPipeline (object, light, camera){
 	this.screen = new Array();
 	this.zBuffer = new Array();
 
-	this.canvasWidth = 200;
-	this.canvasHeight= 200;
+	this.canvasHeight = 480;
+	this.canvasWidth = Math.round(this.canvasHeight * (camera.width/camera.height));
+	canvasCtx.width  = this.canvasHeight;
+	canvasCtx.height = this.canvasWidth;
 
 }
 
-
-RenderPipeline.prototype.initialisezBuffer = function(width, height) {
-	for (var i = 0; i < height; i++) {
+RenderPipeline.prototype.initialisezBuffer = function() {
+	for (var i = 0; i < this.canvasWidth; i++) {
 		this.screen[i] = new Array();
 		this.zBuffer[i] = new Array();
-		for (var j = 0; j < width; j++) {
-			this.screen[i][j] = vec3.fromValues(128,128,128);
+		for (var j = 0; j < this.canvasHeight; j++) {
+			this.screen[i][j] = vec3.fromValues(255,255,255);
 			this.zBuffer[i][j] = Infinity;
 		}
 	}
 };
 
 /*Coloca as coordenadas dos pontos em Coordenadas de Tela*/
-RenderPipeline.prototype.updateCoords = function(width, height) {
+RenderPipeline.prototype.updateVerticesInScreen = function() {
 	for (var i = 0; i < this.object.vertices.length; i++) {
-		this.object.vertices[i][0] = parseInt((this.object.vertices[i][0] + 1) * width / 2);
-		this.object.vertices[i][1] = parseInt((1 - this.object.vertices[i][1]) * height / 2);
+		this.object.vertices[i][0] = parseInt((this.object.vertices[i][0] + 1) * this.canvasWidth / 2);
+		this.object.vertices[i][1] = parseInt((1 - this.object.vertices[i][1]) * this.canvasHeight / 2);
 	}
 };
 
 RenderPipeline.prototype.render = function () {
-	debugger;
-	var width = this.canvasWidth;
-	var height = this.canvasHeight;
-	this.initialisezBuffer(width, height);
-	this.updateCoords(width, height);
+
+	this.initialisezBuffer();
+	this.updateVerticesInScreen();
 
 	for (var i in this.object.triangles) {
-		var triangle = this.object.triangles[i];
-		//if (triangle.facing()) {
-			//p.shading(light.lightSource, light.ambientLight);
-			var edgelist = triangle.getEdgeList();
-			var minY = triangle.getMinY();
-			//var c = p.getColour();
+		var triangle = this.object.getTriangle(i);
 
-			for (var j = 0; j < edgelist.length && edgelist[j]!=null; j++) {
-				var y = minY + j;
+		triangle.sortVertices();
 
-				//edgelist[j].print();
-				//console.log(edgelist[j].getLeftX());
-				var x = Math.round(edgelist[j].getLeftX());
-				var z = Math.round(edgelist[j].getLeftZ());
+		if (triangle.isValid()) {
+			continue;
+		}
 
-				var mz = Math.round((edgelist[j].getRightZ() - edgelist[j].getLeftZ())
-					/ (edgelist[j].getRightX() - edgelist[j].getLeftX()));
+		triangle.getBounds();
+		//console.log(' Vertices normals '+triangle.normals);
 
-				//console.log("Left X: "+ x + " RightX: "+ edgelist[j].getRightX());
-				while (x <= edgelist[j].getRightX()) {
+		for (var y = Math.round(triangle.bounds.Y[0]); y <= Math.round(triangle.bounds.Y[1]); y++) {
 
-					var pixel = vec3.fromValues(x, y, 0);
-					// Point that will be inked inside the triangle
-					var P = triangle.getViewPointInside(pixel);
-					//z = P[2];
+			for (var x = Math.round(triangle.bounds.X[0]); x <= Math.round(triangle.bounds.X[1]); x++) {
 
-					if (z < zBuffer[x][y]) {
-						//console.log("does this work?");
+				var pixel = vec3.fromValues(x, y, 0);
+				//console.log('Pixel:'+ pixel);
 
-						triangle.getNormalViewPointInside(P);
+				var coords = triangle.getBarycentricCoordinates(pixel);
+				//console.log('Coords bar: '+coords);
 
-						/* Calculate pixel color */
-						var color = calculateColor(P, N);
+				/*Find 3d point in world*/
+				var point3d = triangle.getViewPointInside(coords);
 
-						this.zBuffer[x][y] = z;
-						this.screen[x][y] = color;
+				/*z-buffer test*/
+				if ((x >= 0 && y >= 0 && x < this.zBuffer.length
+					&& y < this.zBuffer[0].length && point3d[2] > 0
+					&& point3d[2] < this.zBuffer[Math.round(x)][Math.round(y)])) {
 
-						/* Paint the pixel */
-						//call WebGL
+					this.zBuffer[Math.round(x)][Math.round(y)] = point3d[2];
 
-					}
-					x++;
-					z += mz;
+					var color = vec3.fromValues((10*i)%255,(20*i)%255,(30*i)%255);
+
+					var point3dNormal = triangle.getNormalViewPointInside(point3d, coords);
+					//console.log('3D point '+point3d);
+					//console.log('3D point normal: '+point3dNormal);
+					//if (coords[0]<0.1 || coords[1]<0.1 || coords[2] < 0.1) {
+					//	this.light.diffuseVector = vec3.fromValues(10/256,200/256,10/256);
+					//} else
+					//if ((coords[0]<0.6 && coords[0]>0.3) || (coords[1]<0.6 && coords[1]>0.3) ||
+					//	(coords[2]<0.6 && coords[2]>0.3)) {
+					//	this.light.diffuseVector = vec3.fromValues(10/256,10/256,200/256);
+					//} else {
+					//	this.light.diffuseVector = vec3.fromValues(200/256,10/256,10/256);
+					//}
+
+					///* Calculate pixel color */
+					var color = this.calculateColor(point3d, point3dNormal);
+
+					//utils.drawPoint(x, y, color);
+					/* Draw the pixel */
+					this.screen[x][y] = color;
+
 				}
+
 			}
-		//}
+			triangle.updateBounds(y);
+
+		}
 	}
 };
 
-RenderPipeline.prototype.calculateColor = function(pixel, normal) {
+RenderPipeline.prototype.drawScene = function() {
+
+// first, create a new ImageData to contain our pixels
+//	var imgData = canvasCtx.createImageData(this.canvasWidth, this.canvasHeight); // width x height
+//	var data = imgData.data;
+//	var img = [];
+	for (var x = 0; x < this.canvasWidth; x++) {
+		for (var y = 0; y < this.canvasHeight; y++){
+			var color = this.screen[x][y];
+			utils.drawPoint(x, y, color);
+			//img.push(color[0]);
+			//img.push(color[1]);
+			//img.push(color[2]);
+			//img.push(1);
+		}
+	}
+	//
+	//imgData.data.set(new Uint8Array(img));
+	//canvasCtx.putImageData(imgData, 0, 0);
+};
+
+/*
+ * Calculates the shading of the polygon
+ * ￼I = Ia*Ka
+ * ￼I = Il*(Kd cos(N,L))
+ * ￼I = Is*Ks(R.V)^h
+ *  R = 2N (N.L) - L
+ */
+RenderPipeline.prototype.calculateColor = function(point3d, point3dNormal) {
 
 	var color = vec3.create();
 
-	var ka = light.ambient;
+	var ka = this.light.ambient;
 
 	/* Ambient Component */
-	color[0] = ka*light.ambientColor[0];
-	color[1] = ka*light.ambientColor[1];
-	color[2] = ka*light.ambientColor[2];
+	color[0] = ka*this.light.ambientColor[0];
+	color[1] = ka*this.light.ambientColor[1];
+	color[2] = ka*this.light.ambientColor[2];
 
 	/*Vetor L*/
-	var L = vec3.fromValues(light.lightSource[0] - pixel[0],
-		light.lightSource[1] - pixel[1],
-		light.lightSource[2] - pixel[2]);
+	var L = vec3.fromValues(this.light.lightSource[0] - point3d[0],
+		this.light.lightSource[1] - point3d[1],
+		this.light.lightSource[2] - point3d[2]);
 	vec3.normalize(L, L);
 
 	/* Diffuse component */
-	var dotNL = vec3.dot(L, normal);
-
+	var dotNL = vec3.dot(L, point3dNormal);
 	if (dotNL > 0) {
-		color[0] += light.diffuseVector[0]*light.lightColor[0]*light.diffuse*dotNL;
-		color[1] += light.diffuseVector[1]*light.lightColor[1]*light.diffuse*dotNL;
-		color[2] += light.diffuseVector[2]*light.lightColor[2]*light.diffuse*dotNL;
+		color[0] += this.light.diffuseVector[0]*this.light.lightColor[0]*this.light.diffuse*dotNL;
+		color[1] += this.light.diffuseVector[1]*this.light.lightColor[1]*this.light.diffuse*dotNL;
+		color[2] += this.light.diffuseVector[2]*this.light.lightColor[2]*this.light.diffuse*dotNL;
 	}
-
-	var aux = dotNL;
 
 	/* R Vector */
-	var R = vec3.fromValues(2*aux*normal[0] - L[0], 2*aux*normal[1] - L[1], 2*aux*normal[2] - L[2]);
+	var R = vec3.fromValues(2*dotNL*point3dNormal[0] - L[0],
+							2*dotNL*point3dNormal[1] - L[1],
+							2*dotNL*point3dNormal[2] - L[2]);
 
 	/* V Vector */
-	var V = vec3.fromValues(-pixel[0], -pixel[1], -pixel[2]);
+	var V = vec3.fromValues(-point3d[0], -point3d[1], -point3d[2]);
 	vec3.normalize(V, V);
 
-	var dotVR = vec3.dot(V, R);
-
 	/* Specular component */
+	var dotVR = vec3.dot(V, R);
 	if (dotVR > 0) {
-		var rugosity = light.specular*Math.pow(dotVR, light.n);
-		color[0] += light.lightColor[0]*rugosity;
-		color[1] += light.lightColor[1]*rugosity;
-		color[2] += light.lightColor[2]*rugosity;
+		var rugosity = this.light.specular*Math.pow(dotVR, this.light.n);
+		color[0] += this.light.lightColor[0]*rugosity;
+		color[1] += this.light.lightColor[1]*rugosity;
+		color[2] += this.light.lightColor[2]*rugosity;
 	}
 
-	color[0] = Math.min(color[0], 255);
-	color[1] = Math.min(color[1], 255);
-	color[2] = Math.min(color[2], 255);
+	color[0] = Math.round(this.checkColourRange(color[0]));
+	color[1] = Math.round(this.checkColourRange(color[1]));
+	color[2] = Math.round(this.checkColourRange(color[2]));
 
 	//console.log(color[0] + " " + color[1] + " " + color[2]);
 
@@ -145,66 +183,19 @@ RenderPipeline.prototype.calculateColor = function(pixel, normal) {
 
 };
 
-RenderPipeline.prototype.getMinY = function(){
-	return Math.round(this.bounds.getY());
-};
 
 /*
- * Calculates the bounds of the polygon
+ * Used to ensure the range of values for rgb are between 0 and 255
  */
-RenderPipeline.prototype.getBounds = function(v1, v2, v3) {
-	var minX = Math.min(Math.min(v1[0], v2[0]),v3[0]);
-	var minY = Math.min(Math.min(v1[1], v2[1]),v3[1]);
-	var maxX = Math.max(Math.max(v1[0], v2[0]),v3[0]);
-	var maxY = Math.max(Math.max(v1[1], v2[1]),v3[1]);
+RenderPipeline.prototype.checkColourRange = function(x) {
 
-	var bounds = new Bounds(minX, minY, (maxX - minX), (maxY - minY));
-	return bounds;
+	//console.log("Colour range being checked: " + x);
+
+	if (x <= 0)
+		x = 0;
+
+	if (x >= 255)
+		x = 255;
+
+	return x;
 };
-
-
-RenderPipeline.prototype.getEdgeList = function(v1, v2, v3) {
-	var bounds = this.getBounds();
-	var e = [];
-	var vertices = new Array(v1, v1, v3);
-	//EdgeList[] e = new EdgeList[Number(bounds.getHeight() + 1)];
-
-	for(var i = 0; i<3; i++){
-		//console.log("Edgelist vertices " +i + " "+ (i+1)%3);
-		var va = vertices[i];
-		var vb = vertices[(i+1)%3];
-
-		//console.log("va[1] " + va[1] + " vb[1] " + vb[1]);
-
-		if(va[1] > vb[1]){
-			vb = va;
-			va = vertices[(i+1)%3];
-		}
-
-
-		//console.log("va[1] " + va[1] + " vb[1] " + vb[1]);
-
-		var mx = (vb[0] - va[0])/(vb[1] - va[1]);
-		var mz = (vb[2] - va[2])/(vb[2] - va[2]);
-		var x = va[0];
-		var z = va[2];
-
-		var j = Math.round(va[1])- Math.round(bounds.getY());
-		var maxj = Math.round(vb[1]) - Math.round(bounds.getY());
-
-		while(j < maxj){
-			if(e[j] == null){
-				e[j] = new EdgeList(x, z);
-			} else{
-				e[j].add(x, z);
-
-			}
-			j++;
-			x += mx;
-			z += mz;
-		}
-
-	}
-	return e;
-};
-

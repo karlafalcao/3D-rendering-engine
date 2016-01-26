@@ -1,7 +1,9 @@
 
 var utils = new utilsObject();
 
-function utilsObject(){}
+
+function utilsObject(){
+}
 
 /**
  * Obtains a WebGL context for the canvas with id 'canvas-element-id'
@@ -21,7 +23,7 @@ utilsObject.prototype.getGLContext = function(name){
 		c_height = canvas.height;
 	}
 
-	var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+	var names = ["2d"];
 
 	for (var i = 0; i < names.length; ++i) {
 		try {
@@ -77,6 +79,12 @@ utilsObject.prototype.getShader = function(gl, id) {
 	}
 	return shader;
 }
+
+utilsObject.prototype.drawPoint = function (x, y, rgb, ctx) {
+
+	canvasCtx.fillRect(x,y,1,1);
+	canvasCtx.fillStyle = 'rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
+};
 
 utilsObject.prototype.requestAnimFrame = function(o){
 	requestAnimFrame(o);

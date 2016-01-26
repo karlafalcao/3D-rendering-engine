@@ -1,0 +1,48 @@
+.clearfix {
+	overflow: auto;
+}
+
+body {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+}
+
+.container {
+	position: relative;
+	width: 960px;
+	height: 100%;
+	overflow: hidden;
+	margin: 0 auto;
+}
+h1 {
+	text-align: center;
+}
+.pane {
+	float: left;
+	overflow: auto;
+	width: 50%;
+}
+.fs-form {
+	width: 25%;
+}
+.fs-canvas {
+	width: 69%;
+	height: 75%;
+	margin: 10px 0;
+	border: 1px solid black;
+}
+
+.form-item {
+	width: 100%;
+	height: 50px;
+}
+
+label {
+	display: block;
+	width: 100%;
+}
+
+.error {
+	display: block;
+}

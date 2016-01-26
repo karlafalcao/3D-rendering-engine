@@ -2,66 +2,83 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
-		<title>Flat Shading - CIN/UFPE IF680</title>
-	</head>
-	<body>
-		<style>
-			.thumb {
-				height: 75px;
-				border: 1px solid #000;
-				margin: 10px 5px 0 0;
-			}
-		</style>
+		<title>3D Rendering engine</title>
+		<meta http-equiv='content-type' content='text/html; charset=ISO-8859-1'>
 
-		<label for="camera-file">
-			Camera File
-			<input type="file" id="camera-file" name="camera" />
-		</label>
-		<label for="light-file">
-			Light File
-			<input type="file" id="light-file" name="light" />
-		</label>
-		<label for="object-file">
-			Object File
-			<input type="file" id="object-file" name="object" />
-		</label>
-		<span class="error"></span>
-		Read bytes:
-		<span class="readBytesButtons">
-		  <button>entire file</button>
-		</span>
+		<!-- CSS Styles //-->
+		<link href='css/normalize.css' type='text/css' rel='stylesheet'>
+		<link href='css/style.css' type='text/css' rel='stylesheet'>
 
-		<div id="camera-content"></div>
-		<div id="light-content"></div>
-		<div id="object-content"></div>
-
-		<div id="byte_content"></div>
-		<!-- Web GL Canvas-->
-		<canvas id="canvas-element" width="800" height="600">
-			Your browser does not support the HTML5 canvas element.
-		</canvas>
-
+		<!-- JavaScript Libraries //-->
 		<script src="js/lib/gl-matrix.js"></script>
-
+		<script src='js/utils.js' ></script>
 		<script src="js/Camera.js"></script>
 		<script src="js/Light.js"></script>
-		<script src="js/EdgeList.js"></script>
 		<script src="js/Bounds.js"></script>
 		<script src="js/Triangle.js"></script>
-		<script src="js/Object.js"></script>
+		<script src="js/ObjectModel.js"></script>
 		<script src="js/RenderPipeline.js"></script>
-		<script src="js/FlatShading.js"></script>
-		<script>
-			var fs;
-			!function(){
-				document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
+		<script src="js/RenderingEngine.js"></script>
 
-					if (evt.target.tagName.toLowerCase() == 'button') {
-						fs = new FlatShading();
-						fs.init();
-					}
-				}, false);
-			}()
-		</script>
+	</head>
+
+<body>
+
+	<div id='contents' class="container">
+		<h1>
+			3D Rendering engine
+		</h1>
+
+		<form class="pane fs-form" name="fs-form" action="">
+			<div class="form-item">
+				<label for="camera-file">
+					Camera File
+				</label>
+				<input type="file" id="camera-file" name="camera" />
+			</div>
+			<div class="form-item">
+				<label for="light-file">
+					Light File
+				</label>
+				<input type="file" id="light-file" name="light" />
+			</div>
+			<div class="form-item">
+				<label for="object-file">
+					Object File
+				</label>
+				<input type="file" id="object-file" name="object" />
+			</div>
+			<div class="form-item">
+				<span class="readBytesButtons">
+				  <button type="button">
+					  Start Render
+				  </button>
+				</span>
+			</div>
+			<div class="form-item">
+				<span class="camera-error error"></span>
+				<span class="light-error error"></span>
+				<span class="object-error error"></span>
+			</div>
+		</form>
+		<div class="pane fs-canvas">
+			<canvas id="canvas" width="665" height="480"></canvas>
+		</div>
+
+	</div>
+	<script>
+		var canvasCtx = utils.getGLContext('canvas');
+		var render;
+		!function(){
+			document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
+
+				if (evt.target.tagName.toLowerCase() == 'button') {
+					render = new RenderingEngine();
+					render.init();
+				}
+			}, false);
+		}()
+	</script>
+
 	</body>
 </html>

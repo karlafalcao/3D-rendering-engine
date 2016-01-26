@@ -29,7 +29,7 @@
 //TODO --- Para cada pixel/ponto P'-> Se N.L > 0 entao adicionar componente difusa;
 //TODO --- Para cada pixel/ponto P'-> Se V.R > 0 entao adicionar componente especular;
 
-function FlatShading() {
+function RenderingEngine() {
 
 	this.object;
 	this.light;
@@ -40,6 +40,10 @@ function FlatShading() {
 
 		loadFiles()
 			.then(function(data){
+				var start;
+				var end;
+				var finalTime;
+
 				var cameraFileContent = data[0];
 				var lightFileContent = data[1];
 				var objectFileContent = data[2];
@@ -47,6 +51,7 @@ function FlatShading() {
 				var cameraAttr = loadCamera(cameraFileContent);
 				var lightAttr = loadLight(lightFileContent);
 				var objectAttr = loadObject(objectFileContent);
+
 				if (!cameraAttr || !lightAttr || !objectAttr) {
 					alert('Erro de leitura;');
 					return;
@@ -68,18 +73,31 @@ function FlatShading() {
 				console.log(fs.light);
 
 				/*Object setup*/
-				fs.object = new Object(objectAttr);
+				fs.object = new ObjectModel(objectAttr);
+				console.log(fs.object);
 
 				fs.object.calculateVertices(fs.camera);
-				fs.object.calculateNormals(fs.camera);
 
-				console.log(fs.object);
+				start = new Date().getTime();
+
+				fs.object.calculateNormals(fs.camera);
 
 				var rp = new RenderPipeline(fs.object, fs.light, fs.camera);
 
 				rp.render();
 
-				console.log(rp.screen);
+				rp.drawScene();
+
+				end = new Date().getTime();
+
+				finalTime = end-start;
+
+				console.log('Operation took ' + (finalTime) + ' msec');
+				//
+				//console.log(rp.screen);
+			},
+			function (reason) {
+				console.log(reason);
 			});
 	};
 
@@ -95,12 +113,18 @@ function FlatShading() {
 		var objectFiles = document.getElementById('object-file').files;
 
 		if (!cameraFiles.length || !lightFiles.length || !objectFiles.length) {
-			var errorEls = document.getElementsByClassName('error');
+			var errorEls = document.getElementsByClassName('camera-error');
 			var errorEl = errorEls[0];
-			errorEl.textContent = 'Camera File loaded: ' + cameraFiles.length?'Yes': 'No' +' \n';
-			errorEl.textContent += 'Light File loaded: ' + lightFiles.length?'Yes': 'No' +' \n';
-			errorEl.textContent += 'Object File loaded: ' + objectFiles.length?'Yes': 'No' +' \n';
-			return;
+			errorEl.textContent = 'Camera File loaded: ' + (cameraFiles.length?'Yes': 'No');
+
+			var errorEls = document.getElementsByClassName('light-error');
+			var errorEl = errorEls[0];
+			errorEl.textContent = 'Light File loaded: ' + (lightFiles.length?'Yes': 'No');
+
+			var errorEls = document.getElementsByClassName('object-error');
+			var errorEl = errorEls[0];
+			errorEl.textContent = 'Object File loaded: ' + (objectFiles.length?'Yes': 'No');
+			return Promise.reject("Load File Error");
 		}
 
 		var cameraFile = cameraFiles[0];
@@ -113,10 +137,33 @@ function FlatShading() {
 			readBlob(objectFile)])
 	};
 
+	function readBlob(file) {
+		var deferred = Promise.defer();
+
+		var start = 0;
+		var stop = file.size - 1;
+
+		var reader = new FileReader();
+
+		// If we use onloadend, we need to check the readyState.
+		reader.onloadend = function(evt) {
+			if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+				deferred.resolve(evt.target.result);
+			} else {
+				deferred.reject('File is not ready!');
+			}
+		};
+
+		var blob = file.slice(start, stop + 1);
+		reader.readAsBinaryString(blob);
+
+		return deferred.promise;
+	}
+
 	var fromServerRequest = function(){
-		var cameraFileName = '../data/camera.cfg';
-		var lightFileName = '../data/iluminacao.txt';
-		var objectFileName = '../data/dalton.byu';
+		var cameraFileName = 'data/Cameras/calice2.cfg';
+		var lightFileName = 'data/iluminacao.txt';
+		var objectFileName = 'data/Objetos/calice2.byu';
 
 		var requestFile = function(filename,alias,attributes,callback) {
 			var request = new XMLHttpRequest();
@@ -147,7 +194,7 @@ function FlatShading() {
 
 	var loadCamera = function(fileContent) {
 		/*Load Camera attributtes*/
-		var cameraFileLines = fileContent.split('\n').slice(0,-1);
+		var cameraFileLines = fileContent.split('\n');
 		var camera = {};
 		var lineAttr = [
 			'position',
@@ -160,6 +207,10 @@ function FlatShading() {
 			var line = cameraFileLines[i];
 			var lineValues = line.split(' ');
 
+			lineValues = lineValues.filter(function(value){
+				return !isNaN(parseFloat(value));
+			});
+
 			if(lineAttr[i] && lineValues.length === 3) {
 				camera[lineAttr[i]] = vec3.fromValues(
 					parseFloat(lineValues[0]),
@@ -168,6 +219,10 @@ function FlatShading() {
 				);
 
 			}
+		}
+
+		if (lineAttr.length != Object.keys(camera).length) {
+			return false;
 		}
 
 		if(camera.distHxHy.length === 3) {
@@ -182,7 +237,7 @@ function FlatShading() {
 
 	var loadLight = function(fileContent) {
 		/*Load Light attributtes*/
-		var lightFileLines = fileContent.split('\n').slice(0,-1);
+		var lightFileLines = fileContent.split('\n');
 		var light = {};
 		var lineAttr = [
 			'lightSource',
@@ -199,6 +254,10 @@ function FlatShading() {
 			var line = lightFileLines[i];
 			var lineValues = line.split(' ');
 
+			lineValues = lineValues.filter(function(value){
+				return !isNaN(parseFloat(value));
+			});
+
 			if(lineAttr[i]) {
 				if (lineValues.length == 1) {
 					light[lineAttr[i]] = parseFloat(lineValues[0]);
@@ -212,149 +271,83 @@ function FlatShading() {
 			}
 		}
 
+		if (lineAttr.length != Object.keys(light).length) {
+			return false;
+		}
+
 		return light;
 	};
 
 
 	var loadObject = function(fileContent) {
-		var objectFileLines = fileContent.split('\n').slice(0,-1);
+		var objectFileLines = fileContent.split('\n');
 		var object = {};
 		var lineAttr = [
-			//'ambient',
-			//'diffuse',
-			//'specular',
-			//'diffuseVector',
 			'qty',
 			'vertices',
 			'triangles',
 		];
 
-		var i = 0;
+		var vIdx = 0;
+		var tIdx = 0;
+		object.vertices
 
-		var line = objectFileLines[i];
-		var lineValues = line.split(' ');
-		if(lineAttr[i] == 'qty' && lineValues.length === 2) {
-			/*
-			Reading: Qty of vertices and qty of triangles*/
-			var verticesQty = parseInt(lineValues[0]);
-			var trianglesQty = parseInt(lineValues[1]);
-			object[lineAttr[i]] = [];
-			object[lineAttr[i]].push(verticesQty);
-			object[lineAttr[i]].push(trianglesQty);
+		for (var i=0; i < objectFileLines.length; i++) {
+			var line = objectFileLines[i];
+			var lineValues = line.split(' ');
 
-			/*Reading: Vertices*/
-			var vS = i+1;
-			var vF = i+verticesQty;
+			lineValues = lineValues.filter(function(value){
+				return !isNaN(parseFloat(value));
+			});
 
-			object.vertices = [];
+			if (lineValues.length == 2) {
+				object[lineAttr[i]] = vec2.fromValues(
+					parseFloat(lineValues[0]),
+					parseFloat(lineValues[1])
+				);
 
-			while (vS <= vF && objectFileLines[vS] !== undefined) {
-				var verticeLine = objectFileLines[vS];
-				var vertice = verticeLine.split(' ');
+			} else if (lineValues.length == 3 ) {
+				if (object.qty && vIdx < object.qty[0]) {
+					if (!object.vertices) {
+						object.vertices = []
+					}
 
-				if(vertice.length === 3) {
 					object.vertices.push(vec3.fromValues(
-					parseFloat(vertice[0]),
-					parseFloat(vertice[1]),
-					parseFloat(vertice[2])));
-					vS++;
-				} else {
-					vS++;
-					vF++;
-				}
-			}
+						parseFloat(lineValues[0]),
+						parseFloat(lineValues[1]),
+						parseFloat(lineValues[2])
+					));
+					vIdx++;
 
-			if (object.vertices.length !== verticesQty) {
-				return;
-			}
+				} else if (object.qty && tIdx < object.qty[1]) {
+					if (!object.triangles) {
+						object.triangles = []
+					}
 
-			/*Keeping reading*/
-			/*Reading: Triangles*/
-			var tS = vS;
-			var tF = vS+trianglesQty-1;
-
-			object.triangles = [];
-
-			while (tS <= tF && objectFileLines[tS] !== undefined) {
-				var triangleLine = objectFileLines[tS];
-				var triangle = triangleLine.split(' ');
-
-				if(triangle.length === 3) {
 					object.triangles.push(vec3.fromValues(
-						parseFloat(triangle[0]),
-						parseFloat(triangle[1]),
-						parseFloat(triangle[2])));
-					tS++;
-				} else {
-					tS++;
-					tF++;
+						parseFloat(lineValues[0]-1),
+						parseFloat(lineValues[1]-1),
+						parseFloat(lineValues[2]-1)
+					));
+					tIdx++;
+
 				}
 			}
+		}
 
-			if (object.triangles.length !== trianglesQty) {
-				return;
-			}
+		if (lineAttr.length != Object.keys(object).length) {
+			return false;
+		}
+
+		if (object.vertices.length !== object.qty[0]) {
+			return;
+		}
+
+		if (object.triangles.length !== object.qty[1]) {
+			return;
 		}
 
 		return object;
 	};
-
-	function readBlob(file) {
-		var deferred = Promise.defer();
-
-		var start = 0;
-		var stop = file.size - 1;
-
-		var reader = new FileReader();
-
-		// If we use onloadend, we need to check the readyState.
-		reader.onloadend = function(evt) {
-			if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-
-				document.getElementById('byte_content').textContent = evt.target.result;
-				//document.getElementById('byte_range').textContent =
-				//	['Read bytes: ', start + 1, ' - ', stop + 1,
-				//		' of ', file.size, ' byte file'].join('');
-				deferred.resolve(evt.target.result);
-
-			} else {
-				deferred.reject('File is not ready!');
-			}
-		};
-
-		var blob = file.slice(start, stop + 1);
-		reader.readAsBinaryString(blob);
-
-		return deferred.promise;
-	}
-
-
-	/*
-	 * Converts a 2D array of Colors to a BufferedImage. Assumes that bitmap is
-	 * indexed by column then row and has imageHeight rows and imageWidth
-	 * columns. Note that image.setRGB requires x (col) and y (row) are given in
-	 * that order.
-	 */
-	//this.convertToImage(bitmap) {
-	//	image = new BufferedImage(screenWidth, screenHeight,
-	//		BufferedImage.TYPE_INT_RGB);
-	//	for (int x = 0; x < screenWidth; x++) {
-	//		for (int y = 0; y < screenHeight; y++) {
-	//			image.setRGB(x, y, bitmap[x][y].getRGB());
-	//		}
-	//	}
-	//	return image;
-	//}
-
-	/**
-	 * writes a BufferedImage to a file of the specified name
-	 */
-	//this.saveImage(fname) {
-	//	try {
-	//		ImageIO.write(image, "png", new File(fname));
-	//	} catch (IOException e) {
-	//		console.log("Image saving failed: " + e);
-	//	}
-	//}
 
 }

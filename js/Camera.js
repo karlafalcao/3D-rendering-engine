@@ -20,7 +20,7 @@ function Camera(attrs) {
 	this.frontVector = attrs.front || vec3.create();	// V vector
 	this.distance = attrs.dist || 10;
 	this.width = attrs.hx || 10;
-	this.height =attrs. hy || 10;
+	this.height =attrs.hy || 10;
 
 }
 
