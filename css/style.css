@@ -30,7 +30,7 @@ h1 {
 	width: 69%;
 	height: 75%;
 	margin: 10px 0;
-	border: 1px solid black;
+	border: 10px solid black;
 }
 
 .form-item {
@@ -45,4 +45,21 @@ label {
 
 .error {
 	display: block;
+}
+
+#object-file {
+	margin-left: 2px;
+	width: 140px;
+}
+
+#preloader {
+	position: absolute;
+}
+
+.time {
+	font-family: Consolas;
+	font-size: 9px;
+	line-height: 32px;
+	position: absolute;
+	padding-left: 32px;
 }

@@ -91,8 +91,9 @@ function RenderingEngine() {
 				end = new Date().getTime();
 
 				finalTime = end-start;
-
-				console.log('Operation took ' + (finalTime) + ' msec');
+				var timeElem = document.getElementsByClassName('time');
+				timeElem[0].textContent = 'Render time: ' + (finalTime) + ' msecs'
+				console.log('Render time: ' + (finalTime) + ' msec');
 				//
 				//console.log(rp.screen);
 			},
@@ -161,9 +162,10 @@ function RenderingEngine() {
 	}
 
 	var fromServerRequest = function(){
-		var cameraFileName = 'data/Cameras/calice2.cfg';
+		var objectName = document.getElementById('object-file').value;
+		var cameraFileName = 'data/Cameras/'+ objectName +'.cfg';
 		var lightFileName = 'data/iluminacao.txt';
-		var objectFileName = 'data/Objetos/calice2.byu';
+		var objectFileName = 'data/Objetos/'+ objectName +'.byu';
 
 		var requestFile = function(filename,alias,attributes,callback) {
 			var request = new XMLHttpRequest();

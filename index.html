@@ -30,23 +30,34 @@
 		</h1>
 
 		<form class="pane fs-form" name="fs-form" action="">
+			<h3>Which object would you like to render?</h3>
+			<!--<div class="form-item">-->
+				<!--<label for="camera-file">-->
+					<!--Camera File-->
+				<!--</label>-->
+
+				<!--<input type="file" id="camera-file" name="camera" />-->
+			<!--</div>-->
+			<!--<div class="form-item">-->
+				<!--<label for="light-file">-->
+					<!--Light File-->
+				<!--</label>-->
+				<!--<input type="file" id="light-file" name="light" />-->
+			<!--</div>-->
 			<div class="form-item">
-				<label for="camera-file">
-					Camera File
-				</label>
-				<input type="file" id="camera-file" name="camera" />
-			</div>
-			<div class="form-item">
-				<label for="light-file">
-					Light File
-				</label>
-				<input type="file" id="light-file" name="light" />
-			</div>
-			<div class="form-item">
-				<label for="object-file">
-					Object File
-				</label>
-				<input type="file" id="object-file" name="object" />
+				<!--<label for="object-file">-->
+					<!--Object File-->
+				<!--</label>-->
+				<select name="object" id="object-file">
+					<option value="crusader" selected>Crusader</option>
+					<option value="vaso">Vaso</option>
+					<option value="calice2">Calice</option>
+					<option value="camaro">Camaro</option>
+					<option value="cat">Cat</option>
+					<option value="spaceship">Spaceship</option>
+					<option value="cow">Cow</option>
+				</select>
+				<!--<input type="file" id="object-file" name="object" />-->
 			</div>
 			<div class="form-item">
 				<span class="readBytesButtons">
@@ -62,6 +73,9 @@
 			</div>
 		</form>
 		<div class="pane fs-canvas">
+			<span class="time">Render time: 0 msecs</span>
+			<img id="preloader" src="img/Preloader_3.gif" alt="preloader">
+
 			<canvas id="canvas" width="665" height="480"></canvas>
 		</div>
 
@@ -75,6 +89,7 @@
 				if (evt.target.tagName.toLowerCase() == 'button') {
 					render = new RenderingEngine();
 					render.init();
+
 				}
 			}, false);
 		}()
