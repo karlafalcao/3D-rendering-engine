@@ -51,7 +51,13 @@ visibilidade garantida pelo algoritmo do “z-buffer”.
     * Também utilizando a aproximação de P, calcula-se V e L; com L e N (normal) calcula-se R e substituem-se estes vetores na equação do modelo de iluminação de Phong, juntamente com os parâmetros fornecidos pelo usuário, calcula-se a cor do pixel (x, yscan). 
 
 
-## Referências
+## Reference
 
  - www.cin.ufpe.br/~marcelow/
+
+
+#### [This project is licensed under the MIT License](http://www.opensource.org/licenses/mit-license.php)
+
+ 
+ 
 

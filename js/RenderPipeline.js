@@ -76,15 +76,16 @@ RenderPipeline.prototype.render = function () {
 					var point3dNormal = triangle.getNormalViewPointInside(point3d, coords);
 					//console.log('3D point '+point3d);
 					//console.log('3D point normal: '+point3dNormal);
-					//if (coords[0]<0.1 || coords[1]<0.1 || coords[2] < 0.1) {
-					//	this.light.diffuseVector = vec3.fromValues(10/256,200/256,10/256);
-					//} else
-					//if ((coords[0]<0.6 && coords[0]>0.3) || (coords[1]<0.6 && coords[1]>0.3) ||
-					//	(coords[2]<0.6 && coords[2]>0.3)) {
-					//	this.light.diffuseVector = vec3.fromValues(10/256,10/256,200/256);
-					//} else {
-					//	this.light.diffuseVector = vec3.fromValues(200/256,10/256,10/256);
-					//}
+
+					if (coords[0]<0.1 || coords[1]<0.1 || coords[2] < 0.1) {
+						this.light.diffuseVector = vec3.fromValues(10/256,200/256,10/256);
+					} else
+					if ((coords[0]<0.6 && coords[0]>0.3) || (coords[1]<0.6 && coords[1]>0.3) ||
+						(coords[2]<0.6 && coords[2]>0.3)) {
+						this.light.diffuseVector = vec3.fromValues(10/256,10/256,200/256);
+					} else {
+						this.light.diffuseVector = vec3.fromValues(200/256,10/256,10/256);
+					}
 
 					///* Calculate pixel color */
 					var color = this.calculateColor(point3d, point3dNormal);
