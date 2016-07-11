@@ -12,6 +12,7 @@
 		<!-- JavaScript Libraries //-->
 		<script src="js/lib/gl-matrix.js"></script>
 		<script src='js/utils.js' ></script>
+		<script src="js/Main.js"></script>
 		<script src="js/Camera.js"></script>
 		<script src="js/Light.js"></script>
 		<script src="js/Bounds.js"></script>
@@ -22,7 +23,7 @@
 
 	</head>
 
-<body>
+<body onload="Main.subscribeClick()">
 
 	<div id='contents' class="container">
 		<h1>
@@ -78,22 +79,7 @@
 
 			<canvas id="canvas" width="665" height="480"></canvas>
 		</div>
-
 	</div>
-	<script>
-		var canvasCtx = utils.getGLContext('canvas');
-		var render;
-		!function(){
-			document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
 
-				if (evt.target.tagName.toLowerCase() == 'button') {
-					render = new RenderingEngine();
-					render.init();
-
-				}
-			}, false);
-		}()
-	</script>
-
-	</body>
+</body>
 </html>
