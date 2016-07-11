@@ -187,13 +187,21 @@ RenderPipeline.prototype.calculateColorByGouraud = function(triangle) {
 	var C1 = this.calculateColor(triangle.originalVertices[0], triangle.normals[0]),
 		C2 = this.calculateColor(triangle.originalVertices[1], triangle.normals[1]),
 		C3 = this.calculateColor(triangle.originalVertices[2], triangle.normals[2]);
+
+	var that = this;
 	
 	return function(coords) {
-		var x = coords[0] * C1[0] + coords[1] * C2[0] + coords[2] * C3[0];
-		var y = coords[0] * C1[1] + coords[1] * C2[1] + coords[2] * C3[1];
-		var z = coords[0] * C1[2] + coords[1] * C2[2] + coords[2] * C3[2];
+		var color = vec3.create();
 
-		return vec3.fromValues(x, y, z); // Final Color
+		color[0] = coords[0] * C1[0] + coords[1] * C2[0] + coords[2] * C3[0];
+		color[1] = coords[0] * C1[1] + coords[1] * C2[1] + coords[2] * C3[1];
+		color[2] = coords[0] * C1[2] + coords[1] * C2[2] + coords[2] * C3[2];
+
+		color[0] = Math.round(that.checkColourRange(color[1]));
+		color[1] = Math.round(that.checkColourRange(color[1]));
+		color[2] = Math.round(that.checkColourRange(color[2]));
+
+		return color; // Final Color
 	};
 }
 
