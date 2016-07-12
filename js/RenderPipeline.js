@@ -146,30 +146,30 @@ RenderPipeline.prototype.calculateColor = function(point3d, point3dNormal) {
 							this.light.lightSource[2] - point3d[2]);
 	vec3.normalize(L, L);
 
-	/* Diffuse component Il * Od * Kd * <N,L> */
 	var dotNL = vec3.dot(L, point3dNormal);
 	if (dotNL > 0) {
+		/* Diffuse component Il * Od * Kd * <N,L> */
 		color[0] += this.light.lightColor[0] * this.light.diffuseVector[0]* this.light.diffuse * dotNL;
 		color[1] += this.light.lightColor[1] * this.light.diffuseVector[1]* this.light.diffuse * dotNL;
 		color[2] += this.light.lightColor[2] * this.light.diffuseVector[2]* this.light.diffuse * dotNL;
-	}
 
-	/* R = Reflection Vector 2N <N.L> - L */
-	var R = vec3.fromValues(2 * dotNL*point3dNormal[0] - L[0],
-							2 * dotNL*point3dNormal[1] - L[1],
-							2 * dotNL*point3dNormal[2] - L[2]);
+		/* R = Reflection Vector 2N <N.L> - L */
+		var R = vec3.fromValues(2 * dotNL*point3dNormal[0] - L[0],
+								2 * dotNL*point3dNormal[1] - L[1],
+								2 * dotNL*point3dNormal[2] - L[2]);
 
-	/* V = View/Observer Vector */
-	var V = vec3.fromValues(-point3d[0], -point3d[1], -point3d[2]);
-	vec3.normalize(V, V);
-
-	/* Specular component Il * Ks <R.V>^n */
-	var dotVR = vec3.dot(V, R);
-	if (dotVR > 0) {
-		var rugosity = this.light.specular * Math.pow(dotVR, this.light.n);
-		color[0] += this.light.lightColor[0] * rugosity;
-		color[1] += this.light.lightColor[1] * rugosity;
-		color[2] += this.light.lightColor[2] * rugosity;
+		/* V = View/Observer Vector */
+		var V = vec3.fromValues(-point3d[0], -point3d[1], -point3d[2]);
+		vec3.normalize(V, V);
+		
+		var dotVR = vec3.dot(V, R);
+		if (dotVR > 0) {
+			/* Specular component Il * Ks <R.V>^n */
+			var rugosity = this.light.specular * Math.pow(dotVR, this.light.n);
+			color[0] += this.light.lightColor[0] * rugosity;
+			color[1] += this.light.lightColor[1] * rugosity;
+			color[2] += this.light.lightColor[2] * rugosity;
+		}
 	}
 
 	color[0] = Math.round(this.checkColourRange(color[0]));
