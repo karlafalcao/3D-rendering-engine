@@ -114,8 +114,8 @@ RenderPipeline.prototype.drawScene = function() {
 			var color = this.screen[x][y];
 			var color2 = this.screen2[x][y];
 			utils.drawPoint(x, y, color, Main.canvasCtx[0]);
-			// if (Main.canvasCtx[1])
-			// 	utils.drawPoint(x, y, color2, Main.canvasCtx[1]);
+				
+			utils.drawPoint(x, y, color2, Main.canvasCtx[1]);
 			//img.push(color[0]);
 			//img.push(color[1]);
 			//img.push(color[2]);
