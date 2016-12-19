@@ -6,13 +6,16 @@ function utilsObject() {}
  * Obtains a WebGL context for the canvas with id 'canvas-element-id'
  * This function is invoked when the WebGL app is starting.
  */
-utilsObject.prototype.getGLContext = function(name, windowEl){
-	
-	if (windowEl) {
-		var canvas = windowEl.document.getElementById(name);
-	} else {
-		var canvas = window.document.getElementById(name);
-	}
+utilsObject.prototype.getGLContext = function(elementId, windowEl){
+	// var windowEl = window.open(title, title, "toolbar=yes,scrollbars=yes,resizable=yes,top=0,left=650,width=600,height=500");
+	// windowEl.onloadend = function(){
+	// 	console.log('loaded');
+	// }
+	// if (windowEl) {
+	// 	windowEl.document.write('<canvas id='+ elementId +' width="665" height="480"></canvas>');
+	// }
+
+	var canvas = windowEl.document.getElementById(elementId);
 	var ctx = null;
 
 	if (canvas == null){

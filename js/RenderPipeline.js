@@ -56,6 +56,8 @@ RenderPipeline.prototype.render = function () {
 		// Calculate inital Ymin Ymax Xmin and Xmax values
 		triangle.getInitialBounds();
 		//console.log(' Vertices normals '+triangle.normals);
+
+		//function
 		var getFinalColor = this.calculateColorByGouraud(triangle);
 
 		for (var y = Math.round(triangle.bounds.Y[0]); y <= Math.round(triangle.bounds.Y[1]); y++) {
@@ -112,7 +114,8 @@ RenderPipeline.prototype.drawScene = function() {
 			var color = this.screen[x][y];
 			var color2 = this.screen2[x][y];
 			utils.drawPoint(x, y, color, Main.canvasCtx[0]);
-			utils.drawPoint(x, y, color2, Main.canvasCtx[1]);
+			// if (Main.canvasCtx[1])
+			// 	utils.drawPoint(x, y, color2, Main.canvasCtx[1]);
 			//img.push(color[0]);
 			//img.push(color[1]);
 			//img.push(color[2]);
@@ -141,22 +144,24 @@ RenderPipeline.prototype.calculateColor = function(point3d, point3dNormal) {
 	color[2] = ka * this.light.ambientColor[2];
 
 	/* L = Light Source Vector */
+	// var L = vec3.sub(this.light.lightSource - point3d);
 	var L = vec3.fromValues(this.light.lightSource[0] - point3d[0],
-							this.light.lightSource[1] - point3d[1],
-							this.light.lightSource[2] - point3d[2]);
+                                                    this.light.lightSource[1] - point3d[1],
+                                                    this.light.lightSource[2] - point3d[2]);
+
 	vec3.normalize(L, L);
 
 	var dotNL = vec3.dot(L, point3dNormal);
 	if (dotNL > 0) {
 		/* Diffuse component Il * Od * Kd * <N,L> */
-		color[0] += this.light.lightColor[0] * this.light.diffuseVector[0]* this.light.diffuse * dotNL;
-		color[1] += this.light.lightColor[1] * this.light.diffuseVector[1]* this.light.diffuse * dotNL;
-		color[2] += this.light.lightColor[2] * this.light.diffuseVector[2]* this.light.diffuse * dotNL;
+		color[0] += this.light.lightColor[0] * this.light.diffuseVector[0] * this.light.diffuse * dotNL;
+		color[1] += this.light.lightColor[1] * this.light.diffuseVector[1] * this.light.diffuse * dotNL;
+		color[2] += this.light.lightColor[2] * this.light.diffuseVector[2] * this.light.diffuse * dotNL;
 
 		/* R = Reflection Vector 2N <N.L> - L */
-		var R = vec3.fromValues(2 * dotNL*point3dNormal[0] - L[0],
-								2 * dotNL*point3dNormal[1] - L[1],
-								2 * dotNL*point3dNormal[2] - L[2]);
+		var R = vec3.fromValues(2 * dotNL * point3dNormal[0] - L[0],
+								2 * dotNL * point3dNormal[1] - L[1],
+								2 * dotNL * point3dNormal[2] - L[2]);
 
 		/* V = View/Observer Vector */
 		var V = vec3.fromValues(-point3d[0], -point3d[1], -point3d[2]);

@@ -58,7 +58,7 @@ function RenderingEngine() {
 				}
 				/*Camera setup*/
 				fs.camera = new Camera(cameraAttr);
-
+				//projeta o V
 				fs.camera.calculateFrontVector();
 				fs.camera.calculateUpVector();
 				fs.camera.calculateRightVector();
@@ -67,7 +67,8 @@ function RenderingEngine() {
 
 				/*Light setup*/
 				fs.light = new Light(lightAttr);
-
+				
+				//Calcula a coordena de vista do ponto de luz -> usa a matrix ortonormal U V N 
 				fs.light.calculateLightSource(fs.camera);
 
 				console.log(fs.light);
@@ -75,7 +76,8 @@ function RenderingEngine() {
 				/*Object setup*/
 				fs.object = new ObjectModel(objectAttr);
 				console.log(fs.object);
-
+				
+				//Calcula as coordenadas de vista dos vertices -> usa a matrix ortonormal U V N 
 				fs.object.calculateVertices(fs.camera);
 
 				start = new Date().getTime();
@@ -139,26 +141,25 @@ function RenderingEngine() {
 	};
 
 	function readBlob(file) {
-		var deferred = Promise.defer();
 
-		var start = 0;
-		var stop = file.size - 1;
+		return new Promise(function(resolve, reject) {
+			var start = 0;
+			var stop = file.size - 1;
 
-		var reader = new FileReader();
+			var reader = new FileReader();
 
-		// If we use onloadend, we need to check the readyState.
-		reader.onloadend = function(evt) {
-			if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-				deferred.resolve(evt.target.result);
-			} else {
-				deferred.reject('File is not ready!');
-			}
-		};
+			// If we use onloadend, we need to check the readyState.
+			reader.onloadend = function(evt) {
+				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+					resolve(evt.target.result);
+				} else {
+					reject('File is not ready!');
+				}
+			};
 
-		var blob = file.slice(start, stop + 1);
-		reader.readAsBinaryString(blob);
-
-		return deferred.promise;
+			var blob = file.slice(start, stop + 1);
+			reader.readAsBinaryString(blob);
+		});
 	}
 
 	var fromServerRequest = function(){
@@ -168,24 +169,26 @@ function RenderingEngine() {
 		var objectFileName = 'data/Objetos/'+ objectName +'.byu';
 
 		var requestFile = function(filename,alias,attributes,callback) {
-			var request = new XMLHttpRequest();
-			var deferred = Promise.defer();
-			console.info('Requesting ' + filename);
-			request.open("GET",filename);
 
-			request.onreadystatechange = function() {
-				if (request.readyState == 4) {
-					if(request.status == 404) {
-						console.info(filename + ' does not exist');
-					}
-					else {
-						deferred.resolve(request.responseText);
-					}
-				}
-			};
-			request.send();
+			return new Promise(function(resolve) {
+				var request = new XMLHttpRequest();
 
-			return deferred.promise;
+				console.info('Requesting ' + filename);
+				request.open("GET",filename);
+
+				request.onreadystatechange = function() {
+					if (request.readyState == 4) {
+						if(request.status == 404) {
+							console.info(filename + ' does not exist');
+						}
+						else {
+							resolve(request.responseText);
+						}
+					}
+				};
+
+				request.send();
+			});
 		};
 
 		return Promise.all([

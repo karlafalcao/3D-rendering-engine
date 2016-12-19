@@ -27,6 +27,7 @@ Camera.prototype.calculateUpVector = function() {
 	this.upVector = vec3.normalize(this.upVector, this.upVector);
 };
 
+//Projeta o vetor V em N
 Camera.prototype.calculateFrontVector = function() {
 
 	var  coef = (vec3.dot(this.frontVector, this.upVector) / vec3.dot(this.upVector, this.upVector));
