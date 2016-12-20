@@ -93,8 +93,14 @@ function RenderingEngine() {
 				end = new Date().getTime();
 
 				finalTime = end-start;
-				var timeElem = document.getElementsByClassName('time');
-				timeElem[0].textContent = 'Render time: ' + (finalTime) + ' msecs'
+
+				var timeNotices = document.querySelectorAll('.time > i');
+				timeNotices.map = Array.prototype.map;
+
+				timeNotices.map(function(timeNotice) {
+					timeNotice.textContent = 'Render time: ' + (finalTime) + ' msecs'	
+				})
+				
 				console.log('Render time: ' + (finalTime) + ' msec');
 				//
 				//console.log(rp.screen);

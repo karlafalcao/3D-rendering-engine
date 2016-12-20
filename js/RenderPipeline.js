@@ -5,8 +5,8 @@ function RenderPipeline (object, light, camera){
 	this.light = light;
 	this.camera = camera;
 
-	this.screen = new Array();
-	this.screen2 = new Array();
+	this.phongPixels = new Array();
+	this.gouraudPixels = new Array();
 	this.zBuffer = new Array();
 
 	this.canvasHeight = 480;
@@ -20,19 +20,19 @@ function RenderPipeline (object, light, camera){
 
 RenderPipeline.prototype.initialisezBuffer = function() {
 	for (var i = 0; i < this.canvasWidth; i++) {
-		this.screen[i] = new Array();
-		this.screen2[i] = new Array();
+		this.phongPixels[i] = new Array();
+		this.gouraudPixels[i] = new Array();
 		this.zBuffer[i] = new Array();
 		for (var j = 0; j < this.canvasHeight; j++) {
-			this.screen[i][j] = vec3.fromValues(255,255,255);
-			this.screen2[i][j] = vec3.fromValues(255,255,255);
+			this.phongPixels[i][j] = vec3.fromValues(255,255,255);
+			this.gouraudPixels[i][j] = vec3.fromValues(255,255,255);
 			this.zBuffer[i][j] = Infinity;
 		}
 	}
 };
 
 /*Coloca as coordenadas dos pontos em Coordenadas de Tela*/
-RenderPipeline.prototype.updateVerticesInScreen = function() {
+RenderPipeline.prototype.updateVerticesInphongPixels = function() {
 	for (var i = 0; i < this.object.vertices.length; i++) {
 		this.object.vertices[i][0] = parseInt((this.object.vertices[i][0] + 1) * this.canvasWidth / 2);
 		this.object.vertices[i][1] = parseInt((1 - this.object.vertices[i][1]) * this.canvasHeight / 2);
@@ -42,7 +42,7 @@ RenderPipeline.prototype.updateVerticesInScreen = function() {
 RenderPipeline.prototype.render = function () {
 
 	this.initialisezBuffer();
-	this.updateVerticesInScreen();
+	this.updateVerticesInphongPixels();
 
 	for (var i in this.object.triangles) {
 		var triangle = this.object.getTriangle(i);
@@ -58,7 +58,7 @@ RenderPipeline.prototype.render = function () {
 		//console.log(' Vertices normals '+triangle.normals);
 
 		//function
-		var getFinalColor = this.calculateColorByGouraud(triangle);
+		var getGouraudColor = this.calculateColorByGouraud(triangle);
 
 		for (var y = Math.round(triangle.bounds.Y[0]); y <= Math.round(triangle.bounds.Y[1]); y++) {
 
@@ -87,12 +87,12 @@ RenderPipeline.prototype.render = function () {
 					//console.log('3D point normal: '+point3dNormal);
 
 					///* Calculate pixel color */
-					var color = this.calculateColor(point3d, point3dNormal);
-					var color2 = getFinalColor(coords);
+					var phongColor = this.calculateColor(point3d, point3dNormal);
+					var gouraudColor = getGouraudColor(coords);
 
 					/* Draw the pixel */
-					this.screen[x][y] = color;
-					this.screen2[x][y] = color2;
+					this.phongPixels[x][y] = phongColor;
+					this.gouraudPixels[x][y] = gouraudColor;
 
 				}
 
@@ -111,11 +111,15 @@ RenderPipeline.prototype.drawScene = function() {
 //	var img = [];
 	for (var x = 0; x < this.canvasWidth; x++) {
 		for (var y = 0; y < this.canvasHeight; y++){
-			var color = this.screen[x][y];
-			var color2 = this.screen2[x][y];
-			utils.drawPoint(x, y, color, Main.canvasCtx[0]);
+			
+			utils.drawPoint(x, y, 
+				this.phongPixels[x][y], 
+				Main.canvasCtx[0]);
 				
-			utils.drawPoint(x, y, color2, Main.canvasCtx[1]);
+			utils.drawPoint(x, y, 
+				this.gouraudPixels[x][y], 
+				Main.canvasCtx[1]);
+			
 			//img.push(color[0]);
 			//img.push(color[1]);
 			//img.push(color[2]);

@@ -1,8 +1,8 @@
-# 3D rendering engine using Phong's Shading and Phong's Ilumination Model
+# 3D rendering engine using Phong/Gouraud Shading
 
 ### Main Goal
 
-![Rendering a Crusader](img/screenshot.png)
+![Phong x Grouraud](img/screenshot.png)
 
 Implementar o método de visualização de objetos triangulados, através do
 algoritmo de conversão por varredura, com métodos de interpolação de Phong, com a

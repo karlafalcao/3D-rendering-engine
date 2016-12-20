@@ -30,7 +30,7 @@
 			3D Rendering engine
 		</h1>
 
-		<form class="pane fs-form" name="fs-form" action="">
+		<form class="fs-form" name="fs-form" action="">
 			<h3>Which object would you like to render?</h3>
 			<!--<div class="form-item">-->
 				<!--<label for="camera-file">-->
@@ -68,17 +68,30 @@
 				  </button>
 				</span>
 			</div>
-			<div class="form-item">
+			<div>
 				<span class="camera-error error"></span>
 				<span class="light-error error"></span>
 				<span class="object-error error"></span>
 			</div>
 		</form>
-		<div class="pane fs-canvas">
-			<span class="time">Render time: 0 msecs</span>
-			<img id="preloader" src="img/Preloader_3.gif" alt="preloader">
+		<div class="fs-canvas">
+			<span class="time">
+				<b> Phong Shading - </b>
+				<i> Render time: 0 msecs</i>
+			</span>
+			<img class="preloader" src="img/Preloader_3.gif" alt="preloader">
 
 			<canvas id="canvas" width="665" height="480"></canvas>
+		</div>
+
+		<div class="fs-canvas">
+			<span class="time">
+				<b> Gouraud Shading - </b>
+				<i> Render time: 0 msecs</i>
+			</span>
+			<img class="preloader" src="img/Preloader_3.gif" alt="preloader">
+
+			<canvas id="canvas1" width="665" height="480"></canvas>
 		</div>
 	</div>
 

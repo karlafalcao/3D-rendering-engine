@@ -15,7 +15,7 @@ utilsObject.prototype.getGLContext = function(elementId, windowEl){
 	// 	windowEl.document.write('<canvas id='+ elementId +' width="665" height="480"></canvas>');
 	// }
 
-	var canvas = windowEl.document.getElementById(elementId);
+	var canvas = window.document.getElementById(elementId);
 	var ctx = null;
 
 	if (canvas == null){
