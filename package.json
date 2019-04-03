@@ -1,9 +1,9 @@
 {
-  "name": "webgl-flat-shading",
+  "name": "3D-rendering-engine",
   "private": true,
-  "version": "0.0.1",
-  "description": "Flat Shading - CIN/UFPE IF680",
-  "repository": "https://github.com/karlafalcao/webgl-flat-shading.git",
+  "version": "2.0.0",
+  "description": "3D-rendering-engine",
+  "repository": "https://github.com/karlafalcao/3D-rendering-engine.git",
   "license": "MIT",
   "devDependencies": {
     "http-server": "^0.6.1",
