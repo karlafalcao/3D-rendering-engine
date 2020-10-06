@@ -1,65 +1,65 @@
 .clearfix {
-	overflow: auto;
+    overflow: auto;
 }
 
 body {
-	position: fixed;
-	width: 100%;
-	height: 100%;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
 .container {
-	position: relative;
-	width: 960px;
-	height: 100%;
-	overflow: hidden;
-	margin: 0 auto;
+    position: relative;
+    width: 960px;
+    height: 100%;
+    overflow: hidden;
+    margin: 0 auto;
 }
 h1 {
-	text-align: center;
+    text-align: center;
 }
 .pane {
-	float: left;
-	overflow: auto;
-	width: 50%;
+    float: left;
+    overflow: auto;
+    width: 50%;
 }
 .fs-form {
-	width: 25%;
+    width: 25%;
 }
 .fs-canvas {
-	width: 69%;
-	height: 75%;
-	margin: 10px 0;
-	border: 10px solid black;
+    width: 69%;
+    height: 75%;
+    margin: 10px 0;
+    border: 10px solid black;
 }
 
 .form-item {
-	width: 100%;
-	height: 50px;
+    width: 100%;
+    height: 50px;
 }
 
 label {
-	display: block;
-	width: 100%;
+    display: block;
+    width: 100%;
 }
 
 .error {
-	display: block;
+    display: block;
 }
 
 #object-file {
-	margin-left: 2px;
-	width: 140px;
+    margin-left: 2px;
+    width: 140px;
 }
 
 #preloader {
-	position: absolute;
+    position: absolute;
 }
 
 .time {
-	font-family: Consolas;
-	font-size: 9px;
-	line-height: 32px;
-	position: absolute;
-	padding-left: 32px;
+    font-family: monospace;
+    font-size: 10px;
+    line-height: 32px;
+    position: absolute;
+    padding-left: 40px;
 }

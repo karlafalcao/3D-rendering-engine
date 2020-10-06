@@ -73,7 +73,7 @@
 			</div>
 		</form>
 		<div class="pane fs-canvas">
-			<span class="time">Render time: 0 msecs</span>
+			<span class="time">Rendering time: 0 msecs</span>
 			<img id="preloader" src="img/Preloader_3.gif" alt="preloader">
 
 			<canvas id="canvas" width="665" height="480"></canvas>
@@ -81,7 +81,7 @@
 
 	</div>
 	<script>
-		var canvasCtx = utils.getGLContext('canvas');
+		utils.setGLContext();
 		var render;
 		!function(){
 			document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {

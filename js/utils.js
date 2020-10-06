@@ -3,6 +3,24 @@ var utils = new utilsObject();
 
 
 function utilsObject(){
+
+	let canvasCtx = null;
+
+
+	this.setGLContext = function(){
+		canvasCtx = this.getGLContext('canvas');
+	}
+
+	this.drawPoint = function (x, y, rgb, ctx) {
+		canvasCtx.fillRect(x,y,1,1);
+		canvasCtx.fillStyle = 'rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
+	};
+
+	this.setCanvasDimensions = function (w, h) {
+
+		canvasCtx.width = h
+		canvasCtx.height = w
+	};
 }
 
 /**
@@ -46,39 +64,6 @@ utilsObject.prototype.getGLContext = function(name){
 /**
  * Utilitary function that allows to set up the shaders (program) using an embedded script (look at the beginning of this source code)
  */
-utilsObject.prototype.getShader = function(gl, id) {
-	var script = document.getElementById(id);
-	if (!script) {
-		return null;
-	}
-
-	var str = "";
-	var k = script.firstChild;
-	while (k) {
-		if (k.nodeType == 3) {
-			str += k.textContent;
-		}
-		k = k.nextSibling;
-	}
-
-	var shader;
-	if (script.type == "x-shader/x-fragment") {
-		shader = gl.createShader(gl.FRAGMENT_SHADER);
-	} else if (script.type == "x-shader/x-vertex") {
-		shader = gl.createShader(gl.VERTEX_SHADER);
-	} else {
-		return null;
-	}
-
-	gl.shaderSource(shader, str);
-	gl.compileShader(shader);
-
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		alert(gl.getShaderInfoLog(shader));
-		return null;
-	}
-	return shader;
-}
 
 utilsObject.prototype.drawPoint = function (x, y, rgb, ctx) {
 

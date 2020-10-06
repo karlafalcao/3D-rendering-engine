@@ -4,30 +4,30 @@
  */
 // Get the list of points
 // Get the list of triangles
-// TODO Calibrate the camera (U(RIGHT) = NxV)
+// DONE: Calibrate the camera (U(RIGHT) = NxV)
 // O seu sistema começa preparando a câmera, ortogonalizando V e gerando U, e depois os normalizando
-//TODO Converter todas as coordenadas para vista
+//DONE: Converter todas as coordenadas para vista
 // Fazer a mudança de coordenadas para o sistema de vista de todos os vértices dos objetos e da
 // posição da fonte de luz PL,
-//TODO Calcula normais dos triangulos (call triangleNormalVector)
-//TODO Ordenam-se os triângulos do objeto segundo a distância dos seus baricentros para a origem, do mais distante para o mais próximo.
+//DONE: Calcula normais dos triangulos (call triangleNormalVector)
+//DONE: Ordenam-se os triângulos do objeto segundo a distância dos seus baricentros para a origem, do mais distante para o mais próximo.
 //  Para que se faça a conversão do mais distante primeiro (Zbuffer)
-//TODO Calcula normais nos vertices
-//TODO Inicialização z-buffer
-//TODO - Para cada triangulo
-//TODO - Projeta seus vertices (P1', P2', P3')vertices
-//TODO - Algoritmo de pintura(Algoritmo Scan conversion)
-//TODO --- Para cada pixel/ponto P'-> encontre suas coordenadas baricentricas P' = alfa*P1'+beta*P2'+gama*P3'
-//TODO --- Para cada pixel/ponto P'-> encontre ponto no mundo 3d : P(views) = alfa*P1+beta*P2+gama*P3
-//TODO --- Para cada pixel/ponto P'-> Consulte z-buffer, se Pz < zbuffer[Px, Py];
-//TODO --- Para cada pixel/ponto P'-> Equacao de iluminacao
-//TODO --- Para cada pixel/ponto P'-> Encontre N = alfa*N1+beta*N2+gama*N3 -> Encontre R e V() e normalize
-//TODO --- Para cada pixel/ponto P'-> Encontre R e V(norm(C-P)) e normalize
-//TODO --- Para cada pixel/ponto P'-> Jogar na equacao de iluminacao
-//TODO --- Para cada pixel/ponto P'-> Checar se N está no mesmo sentido de V (norma do triangulo)
-//TODO --- Para cada pixel/ponto P'-> Se N.V < 0 entao muda o sinal de V (N=-N);
-//TODO --- Para cada pixel/ponto P'-> Se N.L > 0 entao adicionar componente difusa;
-//TODO --- Para cada pixel/ponto P'-> Se V.R > 0 entao adicionar componente especular;
+//DONE Calcula normais nos vertices
+//DONE Inicialização z-buffer
+//DONE - Para cada triangulo
+//DONE - Projeta seus vertices (P1', P2', P3')vertices
+//DONE - Algoritmo de pintura(Algoritmo Scan conversion)
+//DONE --- Para cada pixel/ponto P'-> encontre suas coordenadas baricentricas P' = alfa*P1'+beta*P2'+gama*P3'
+//DONE --- Para cada pixel/ponto P'-> encontre ponto no mundo 3d : P(views) = alfa*P1+beta*P2+gama*P3
+//DONE --- Para cada pixel/ponto P'-> Consulte z-buffer, se Pz < zbuffer[Px, Py];
+//DONE --- Para cada pixel/ponto P'-> Equacao de iluminacao
+//DONE --- Para cada pixel/ponto P'-> Encontre N = alfa*N1+beta*N2+gama*N3 -> Encontre R e V() e normalize
+//DONE --- Para cada pixel/ponto P'-> Encontre R e V(norm(C-P)) e normalize
+//DONE --- Para cada pixel/ponto P'-> Jogar na equacao de iluminacao
+//DONE --- Para cada pixel/ponto P'-> Checar se N está no mesmo sentido de V (norma do triangulo)
+//DONE --- Para cada pixel/ponto P'-> Se N.V < 0 entao muda o sinal de V (N=-N);
+//DONE --- Para cada pixel/ponto P'-> Se N.L > 0 entao adicionar componente difusa;
+//DONE --- Para cada pixel/ponto P'-> Se V.R > 0 entao adicionar componente especular;
 
 function RenderingEngine() {
 
@@ -139,24 +139,28 @@ function RenderingEngine() {
 	};
 
 	function readBlob(file) {
-		var deferred = Promise.defer();
+		let deferred = {
+			promise: new Promise((resolve, reject) => {
+				var start = 0;
+				var stop = file.size - 1;
 
-		var start = 0;
-		var stop = file.size - 1;
+				var reader = new FileReader();
 
-		var reader = new FileReader();
+				// If we use onloadend, we need to check the readyState.
+				reader.onloadend = function(evt) {
+					if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+						resolve(evt.target.result);
+					} else {
+						reject('File is not ready!');
+					}
+				};
 
-		// If we use onloadend, we need to check the readyState.
-		reader.onloadend = function(evt) {
-			if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-				deferred.resolve(evt.target.result);
-			} else {
-				deferred.reject('File is not ready!');
-			}
-		};
+				var blob = file.slice(start, stop + 1);
+				reader.readAsBinaryString(blob);
+			})
+		}
 
-		var blob = file.slice(start, stop + 1);
-		reader.readAsBinaryString(blob);
+		
 
 		return deferred.promise;
 	}
@@ -168,24 +172,23 @@ function RenderingEngine() {
 		var objectFileName = 'data/Objetos/'+ objectName +'.byu';
 
 		var requestFile = function(filename,alias,attributes,callback) {
-			var request = new XMLHttpRequest();
-			var deferred = Promise.defer();
-			console.info('Requesting ' + filename);
-			request.open("GET",filename);
+			return new Promise((resolve, reject) => {
+				var request = new XMLHttpRequest();
+				console.info('Requesting ' + filename);
+				request.open("GET",filename);
 
-			request.onreadystatechange = function() {
-				if (request.readyState == 4) {
-					if(request.status == 404) {
-						console.info(filename + ' does not exist');
+				request.onreadystatechange = function() {
+					if (request.readyState == 4) {
+						if(request.status == 404) {
+							console.info(filename + ' does not exist');
+						}
+						else {
+							resolve(request.responseText);
+						}
 					}
-					else {
-						deferred.resolve(request.responseText);
-					}
-				}
-			};
-			request.send();
-
-			return deferred.promise;
+				};
+				request.send();
+			})			
 		};
 
 		return Promise.all([

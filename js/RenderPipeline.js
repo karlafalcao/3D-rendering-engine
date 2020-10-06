@@ -10,9 +10,8 @@ function RenderPipeline (object, light, camera){
 
 	this.canvasHeight = 480;
 	this.canvasWidth = Math.round(this.canvasHeight * (camera.width/camera.height));
-	canvasCtx.width  = this.canvasHeight;
-	canvasCtx.height = this.canvasWidth;
-
+	utils.setCanvasDimensions(this.canvasWidth, this.canvasHeight)
+	
 }
 
 RenderPipeline.prototype.initialisezBuffer = function() {
